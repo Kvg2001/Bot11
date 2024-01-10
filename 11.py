@@ -3,21 +3,33 @@ from discord.ext import commands
 import mysql.connector
 
 intents = discord.Intents.default()
-intents.message_content = True
+intents.typing = False
+intents.presences = False
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 # Conectare la baza de date MySQL
 config = {
-    'host': '93.115.101.23',
+    'host': '93.115.101.23:3306',
     'user': 'u521_FSfdz1guUF',
     'password': 'jg9sfLwntt@StfB+tNG^7QRR',
     'database': 's521_webProject',
-    'port': 3306
 }
 
 conn = mysql.connector.connect(**config)
 cursor = conn.cursor()
+
+# Comanda de creare a tabelului
+create_table_query = """
+CREATE TABLE IF NOT EXISTS testbot (
+    id BIGINT PRIMARY KEY,
+    nume VARCHAR(255),
+    discriminator VARCHAR(4)
+);
+"""
+
+cursor.execute(create_table_query)
+conn.commit()
 
 @bot.event
 async def on_ready():
