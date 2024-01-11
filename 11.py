@@ -2,7 +2,11 @@ import discord
 from discord.ext import commands
 import mysql.connector
 
-bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+bot = commands.Bot(command_prefix='/', intents=intents)
 
 config = {
     'host': '93.115.101.23',
@@ -21,9 +25,6 @@ cnx.commit()
 async def on_ready():
     print(f'Conectat ca {bot.user.name}')
 
-@bot.event
-async def on_message(message):
-    await bot.process_commands(message)
     
 @bot.command()
 async def register(ctx):
