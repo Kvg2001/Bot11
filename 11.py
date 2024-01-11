@@ -25,7 +25,7 @@ async def on_ready():
 async def register(ctx):
     user = ctx.author
 
-    cursor.execute('SELECT nume FROM testbot WHERE id = %s', (user.id,))
+    cursor.execute('SELECT nume FROM testbot WHERE nume = %s', (user.name,))
     rows = cursor.fetchall()
     
     for nume in rows:
