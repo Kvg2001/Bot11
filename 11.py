@@ -22,9 +22,9 @@ async def on_ready():
     print(f'Conectat ca {bot.user.name}')
 
 @bot.event
-async def on_command_error(ctx, error):
-    print(f"An error occurred: {error}")
-
+async def on_message(message):
+    await bot.process_commands(message)
+    
 @bot.command()
 async def register(ctx):
     user = ctx.author
