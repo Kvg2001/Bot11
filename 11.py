@@ -52,15 +52,19 @@ async def points(ctx):
 
 @bot.command()
 async def give(ctx, user: discord.Member, points: int):
-    cursor.execute("SELECT puncte FROM testbot WHERE nume = %s", ( user.name,))
+    cursor.execute("SELECT puncte FROM testbot WHERE nume = %s", (user.name,))
     row = cursor.fetchone()
-    for puncte in row:
-        punctenoi = puncte + points
 
-        cursor.execute("UPDATE testbot SET puncte = %s WHERE nume = %s", (punctenoi, user.name))
+    if row is not None:
+        puncte_vechi = row[0]
+        puncte_noi = puncte_vechi + points
+
+        cursor.execute("UPDATE testbot SET puncte = %s WHERE nume = %s", (puncte_noi, user.name))
         cnx.commit()
-        await ctx.send(f'Punctele pentru {user.mention} au fost actualizate la `{punctenoi}`!')
-
+        await ctx.send(f'Punctele pentru {user.mention} au fost actualizate la `{puncte_noi}`!')
+    else:
+        await ctx.send(f'Nu am putut gasi jucatorul {user.mention} in baza de date.')
+        
 @bot.event
 async def on_bot_close():
     cursor.close()
