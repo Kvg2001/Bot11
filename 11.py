@@ -29,7 +29,7 @@ async def register(ctx):
     cursor.execute('SELECT nume FROM testbot WHERE id = %s', (user.name,))
     rows = cursor.fetchall()
     for nume in rows:
-           if ctx.author.name == name
+           if ctx.author.name == name:
         await ctx.send(f'{user.name}, esti deja inregistrat! Nu este necesar sa te inregistrezi din nou.')
   Else:
     cursor.execute('INSERT INTO testbot (id, nume, puncte) VALUES (%s, %s, 0)', (user.id, user.name))
