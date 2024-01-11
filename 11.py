@@ -25,15 +25,17 @@ async def on_ready():
 async def register(ctx):
     user = ctx.author
 
-    cursor.execute('SELECT nume FROM testbot WHERE id = %s', (user.name,))
+    cursor.execute('SELECT nume FROM testbot WHERE id = %s', (user.id,))
     rows = cursor.fetchall()
+    
     for nume in rows:
-        if ctx.author.name == nume:
+        if ctx.author.name == nume[0]:
             await ctx.send(f'{user.name}, esti deja inregistrat! Nu este necesar sa te inregistrezi din nou.')
         else:
             cursor.execute('INSERT INTO testbot (id, nume, puncte) VALUES (%s, %s, 0)', (user.id, user.name))
             cnx.commit()
             await ctx.send(f'{user.name} a fost inregistrat cu succes!')
+
 @bot.command()
 async def points(ctx):
     user = ctx.author
