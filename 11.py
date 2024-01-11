@@ -61,4 +61,4 @@ async def on_bot_close():
     cursor.close()
     cnx.close()
 
-bot.run('MTE5NDczOTE4MjU2ODk5NjkwNA.G2iUFc._YshhVl_MMSu_gn3W3TlqowfpVBzaDIN-XG2wU')
+bot.run('MTE5NTA5MjAwNjM2NDUzMjc5Ng.GsoX4T.ClBOLWX7YhXHFjRNcfHYyrALfyySvr2C8DXbo4')
