@@ -34,15 +34,18 @@ async def on_ready():
 async def register(ctx):
     user = ctx.author
 
-    cursor.execute('SELECT id FROM testbot WHERE id = %s', (user.id,))
-    existing_rows = cursor.fetchall()
+    if user.id is not None:
+        cursor.execute('SELECT id FROM testbot WHERE id = %s', (user.id,))
+        existing_rows = cursor.fetchall()
 
-    if existing_rows:
-        await ctx.send(f'{user.name}, esti deja inregistrat! Nu este necesar sa te inregistrezi din nou.')
+        if existing_rows:
+            await ctx.send(f'{user.name}, esti deja inregistrat! Nu este necesar sa te inregistrezi din nou.')
+        else:
+            cursor.execute('INSERT INTO testbot (puncte) VALUES (0)')
+            cnx.commit()
+            await ctx.send(f'{user.name} a fost inregistrat cu succes!')
     else:
-        cursor.execute('INSERT INTO testbot (puncte) VALUES (0)')
-        cnx.commit()
-        await ctx.send(f'{user.name} a fost inregistrat cu succes!')
+        await ctx.send('ID-ul utilizatorului este invalid.')
 @bot.command()
 async def points(ctx):
     user = ctx.author
