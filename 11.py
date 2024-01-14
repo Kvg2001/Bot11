@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands
 import mysql.connector
  
- 
 intents = discord.Intents.default()
 intents.message_content = True
  
@@ -17,30 +16,16 @@ config = {
 cnx = mysql.connector.connect(**config)
 cursor = cnx.cursor()
  
-cursor.execute("CREATE TABLE IF NOT EXISTS testbot (id INT(100),nume VARCHAR(50),puncte INT(100))")
+cursor.execute("CREATE TABLE IF NOT EXISTS testbot (id INT(30) AUTO_INCREMENT PRIMARY KEY,nume VARCHAR(50) UNIQUE,puncte INT(100))")
 cnx.commit()
  
 @bot.event
 async def on_ready():
     print(f'Conectat ca {bot.user.name}')
  
-#@bot.command()
-#async def register(ctx):
-#    user = ctx.author
-#
-#    cursor.execute('SELECT nume FROM testbot WHERE nume = %s', (user.name,))
-#    existing_rows = cursor.fetchall()
-#
-#    if existing_rows:
-#        await ctx.send(f'{user.name}, esti deja inregistrat! Nu este necesar sa te inregistrezi din nou.')
-#    else:
-#        cursor.execute('INSERT INTO testbot (id, nume, puncte) VALUES (%s, %s, 0)', (user.id, user.name))
-#        cnx.commit()
-#        await ctx.send(f'{user.name} a fost inregistrat cu succes!')
- 
 @bot.command()
 async def register(ctx):
-    user=ctx.author
+    user = ctx.author
  
     cursor.execute("SELECT nume FROM testbot WHERE nume = %s", (user.name, ))
     rows = cursor.fetchall()
@@ -52,6 +37,7 @@ async def register(ctx):
             cursor.execute('INSERT INTO testbot (id, nume, puncte) VALUES (%s, %s, 0)', (user.id, user.name))
             cnx.commit()
             await ctx.send(f'{user.name} a fost inregistrat cu succes!')
+ 
 @bot.command()
 async def points(ctx):
     user = ctx.author
@@ -76,7 +62,7 @@ async def give(ctx, user: discord.Member, points: int):
         cnx.commit()
         await ctx.send(f'Punctele pentru {user.mention} au fost actualizate la `{puncte_noi}`!')
     else:
-        await ctx.send(f'Nu am putut gÄsi jucÄtorul {user.mention} Ã®n baza de date.')      
+        await ctx.send(f'Nu am putut gasi jucatorul {user.mention} in baza de date.')      
  
 @bot.event
 async def on_bot_close():
