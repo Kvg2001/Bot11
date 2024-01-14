@@ -34,53 +34,40 @@ async def on_ready():
 async def register(ctx):
     user = ctx.author
 
-    if user.id is not None:
-        print(f'ID-ul utilizatorului: {user.id}')
+    cursor.execute('SELECT nume FROM testbot WHERE nume = %s', (user.name,))
+    existing_rows = cursor.fetchall()
 
-        cursor.execute('SELECT id FROM testbot WHERE id = %s', (user.id,))
-        existing_rows = cursor.fetchall()
-
-        print(f'Randuri existente: {existing_rows}')
-
-        if existing_rows:
-            await ctx.send(f'{user.name}, esti deja inregistrat! Nu este necesar sa te inregistrezi din nou.')
-        else:
-            try:
-                cursor.execute('INSERT INTO testbot (id, puncte) VALUES (%s, 0)', (user.id,))
-                cnx.commit()
-                await ctx.send(f'{user.name} a fost inregistrat cu succes!')
-            except Exception as e:
-                print(f'Eroare la inserare: {e}')
-                await ctx.send(f'Eroare la inregistrare. Te rog sa contactezi administratorul.')
+    if existing_rows:
+        await ctx.send(f'{user.name}, esti deja inregistrat! Nu este necesar sa te inregistrezi din nou.')
     else:
-        await ctx.send('ID-ul utilizatorului este invalid.')
+        cursor.execute('INSERT INTO testbot (id, nume, puncte) VALUES (%s, %s, 0)', (user.id, user.name))
+        cnx.commit()
+        await ctx.send(f'{user.name} a fost inregistrat cu succes!')
 @bot.command()
 async def points(ctx):
     user = ctx.author
-    cursor.execute("SELECT puncte FROM testbot WHERE id = %s", (user.id,))
+    cursor.execute("SELECT puncte FROM testbot WHERE nume = %s", (user.name,))
     row = cursor.fetchone()
 
     if row is not None:
         await ctx.send(f'Jucatorul *{user.name}* are ```{row[0]}``` puncte!')
     else:
-        await ctx.send(f'Nu am putut gasi jucatorul {user.mention} in baza de date.')
-        
+        await ctx.send(f'Nu am putut gasi jucatorul {user.mention} in baza de date.') 
+
 @bot.command()
 async def give(ctx, user: discord.Member, points: int):
-    cursor.execute("SELECT id FROM testbot WHERE id = %s", (user.id,))
+    cursor.execute("SELECT puncte FROM testbot WHERE nume = %s", (user.name,))
     row = cursor.fetchone()
 
     if row is not None:
-        cursor.execute("SELECT puncte FROM testbot WHERE id = %s", (user.id,))
-        puncte_vechi = cursor.fetchone()[0]
+        puncte_vechi = row[0]
         puncte_noi = puncte_vechi + points
 
-        cursor.execute("UPDATE testbot SET puncte = %s WHERE id = %s", (puncte_noi, user.id))
+        cursor.execute("UPDATE testbot SET puncte = %s WHERE nume = %s", (puncte_noi, user.name))
         cnx.commit()
         await ctx.send(f'Punctele pentru {user.mention} au fost actualizate la `{puncte_noi}`!')
     else:
-        await ctx.send(f'Nu am putut gasi jucatorul {user.mention} in baza de date.')
-        
+        await ctx.send(f'Nu am putut gÄsi jucÄtorul {user.mention} Ã®n baza de date.')      
 
 @bot.event
 async def on_bot_close():
