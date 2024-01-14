@@ -91,11 +91,11 @@ async def giveaway(ctx, duration: str, winners: int, entry_fee: int, prize: int,
     user = ctx.author
 
     if duration[-1] == 'm':
-    duration_seconds = int(duration[:-1]) * 60
+       duration_seconds = int(duration[:-1]) * 60
     elif duration[-1] == 'h':
-    duration_seconds = int(duration[:-1]) * 3600
+       duration_seconds = int(duration[:-1]) * 3600
     else:
-    await ctx.send("Invalid duration format. Use 'm' for minutes or 'h' for hours.")
+       await ctx.send("Invalid duration format. Use 'm' for minutes or 'h' for hours.")
     return
         return
 
