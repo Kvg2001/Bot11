@@ -35,13 +35,17 @@ async def register(ctx):
     user = ctx.author
 
     if user.id is not None:
+        print(f'ID-ul utilizatorului: {user.id}')
+
         cursor.execute('SELECT id FROM testbot WHERE id = %s', (user.id,))
         existing_rows = cursor.fetchall()
+
+        print(f'Randuri existente: {existing_rows}')
 
         if existing_rows:
             await ctx.send(f'{user.name}, esti deja inregistrat! Nu este necesar sa te inregistrezi din nou.')
         else:
-            cursor.execute('INSERT INTO testbot (puncte) VALUES (0)')
+            cursor.execute('INSERT INTO testbot (id, puncte) VALUES (%s, 0)', (user.id,))
             cnx.commit()
             await ctx.send(f'{user.name} a fost inregistrat cu succes!')
     else:
