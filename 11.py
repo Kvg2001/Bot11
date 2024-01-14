@@ -89,9 +89,9 @@ async def give(ctx, user: discord.Member, points: int):
 async def giveaway(ctx, duration: str, winners: int, entry_fee: int, prize: int, description: str):
     user = ctx.author
 
-    if duration.isdigit() and duration[-1] == 'm':
+    if duration[:-1].isdigit() and duration[-1] == 'm':
         duration_seconds = int(duration[:-1]) * 60
-    elif duration.isdigit() and duration[-1] == 'h':
+    elif duration[:-1].isdigit() and duration[-1] == 'h':
         duration_seconds = int(duration[:-1]) * 3600
     else:
         await ctx.send("Invalid duration format. Use 'Xm' for X minutes or 'Xh' for X hours.")
