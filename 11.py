@@ -25,42 +25,42 @@ cnx.commit()
 async def on_ready():
     print(f'Conectat ca {bot.user.name}')
 
-    
 @bot.command()
 async def register(ctx):
     user = ctx.author
 
-    cursor.execute('SELECT nume FROM testbot WHERE nume = %s', (user.name,))
+    cursor.execute('SELECT id FROM testbot WHERE id = %s', (user.id,))
     existing_rows = cursor.fetchall()
 
     if existing_rows:
         await ctx.send(f'{user.name}, esti deja inregistrat! Nu este necesar sa te inregistrezi din nou.')
     else:
-        cursor.execute('INSERT INTO testbot (id, nume, puncte) VALUES (%s, %s, 0)', (user.id, user.name))
+        cursor.execute('INSERT INTO testbot (id, puncte) VALUES (%s, 0)', (user.id,))
         cnx.commit()
-        await ctx.send(f'{user.name} a fost inregistrat cu succes!')       
+        await ctx.send(f'{user.name} a fost inregistrat cu succes!')
         
 @bot.command()
 async def points(ctx):
     user = ctx.author
-    cursor.execute("SELECT puncte FROM testbot WHERE nume = %s", (user.name,))
+    cursor.execute("SELECT puncte FROM testbot WHERE id = %s", (user.id,))
     row = cursor.fetchone()
 
     if row is not None:
         await ctx.send(f'Jucatorul *{user.name}* are ```{row[0]}``` puncte!')
     else:
         await ctx.send(f'Nu am putut gasi jucatorul {user.mention} in baza de date.')
-
+        
 @bot.command()
 async def give(ctx, user: discord.Member, points: int):
-    cursor.execute("SELECT puncte FROM testbot WHERE nume = %s", (user.name,))
+    cursor.execute("SELECT id FROM testbot WHERE id = %s", (user.id,))
     row = cursor.fetchone()
 
     if row is not None:
-        puncte_vechi = row[0]
+        cursor.execute("SELECT puncte FROM testbot WHERE id = %s", (user.id,))
+        puncte_vechi = cursor.fetchone()[0]
         puncte_noi = puncte_vechi + points
 
-        cursor.execute("UPDATE testbot SET puncte = %s WHERE nume = %s", (puncte_noi, user.name))
+        cursor.execute("UPDATE testbot SET puncte = %s WHERE id = %s", (puncte_noi, user.id))
         cnx.commit()
         await ctx.send(f'Punctele pentru {user.mention} au fost actualizate la `{puncte_noi}`!')
     else:
