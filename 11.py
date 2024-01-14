@@ -143,11 +143,11 @@ async def on_reaction_add(reaction, user):
                 giveaway_info['participants'].append(user.id)
 
                 await user.send(f"You've successfully entered the giveaway! You paid {entry_fee} points as an entry fee.")
+                await user.send(f"Good luck! ð")
             else:
                 await user.send(f"Insufficient points to enter the giveaway. You need {entry_fee} points.")
 
-            await reaction.remove(user)
-
+            await reaction.remove(bot.user)
 @bot.event
 async def on_bot_close():
     cursor.close()
