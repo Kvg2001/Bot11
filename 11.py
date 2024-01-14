@@ -74,5 +74,5 @@ async def on_bot_close():
     cursor.close()
     cnx.close()
 
-bot.run('TOKENUL_BOTULUI_TAU')
+
 bot.run('MTE5NTA5MjAwNjM2NDUzMjc5Ng.GsoX4T.ClBOLWX7YhXHFjRNcfHYyrALfyySvr2C8DXbo4')
