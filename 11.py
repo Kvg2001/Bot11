@@ -91,24 +91,23 @@ async def giveaway(ctx, duration: str, winners: int, entry_fee: int, prize: int,
     user = ctx.author
 
     if duration[-1] == 'm':
-       duration_seconds = int(duration[:-1]) * 60
+        duration_seconds = int(duration[:-1]) * 60
     elif duration[-1] == 'h':
-       duration_seconds = int(duration[:-1]) * 3600
+        duration_seconds = int(duration[:-1]) * 3600
     else:
-       await ctx.send("Invalid duration format. Use 'm' for minutes or 'h' for hours.")
-    return
+        await ctx.send("Invalid duration format. Use 'Xm' for X minutes or 'Xh' for X hours.")
+        return
 
     end_time = datetime.utcnow() + timedelta(seconds=duration_seconds)
 
     embed = discord.Embed(
-        title="Giveaway",
-        description=f"{description}\n\nReact with :tada: to enter!\n\n**Prize:** {prize} points\n**Winners:** {winners}\n**Entry Fee:** {entry_fee} points\n**Ends In:** {humanize.naturaltime(end_time)}",
+        title="Giveaway",description=f"{description}\n\nReact with :tada: to enter!\n\n**Prize:** {prize} points\n**Winners:** {winners}\n**Entry Fee:** {entry_fee} points\n**Ends In:** {humanize.naturaltime(end_time)}",
         color=0x00FF00
     )
     embed.set_footer(text=f"Hosted by {user.name}")
 
     message = await ctx.send(embed=embed)
-    await message.add_reaction(":tada:")
+    await message.add_reaction(':tada:')
 
     giveaway_data[message.id] = {
         'host': user.id,
