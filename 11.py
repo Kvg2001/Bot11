@@ -87,26 +87,21 @@ async def give(ctx, user: discord.Member, points: int):
 
 
 @bot.command()
-async def giveaway(ctx, duration: str, winners: int, entry_fee: int, prize: int, description: str):
+async def giveaway(ctx, hours: int, minutes: int, winners: int, entry_fee: int, prize: int, description: str):
     user = ctx.author
 
-    duration_seconds = parse_duration(duration)
-    if duration_seconds is None:
-        await ctx.send("Invalid duration format. Use 'Xm' for X minutes or 'Xh' for X hours.")
-        return
-
+    duration_seconds = (hours * 3600) + (minutes * 60)
     end_time = datetime.utcnow() + timedelta(seconds=duration_seconds)
 
     embed = discord.Embed(
         title="Giveaway",
-        description=f"{description} ð\n\nReact with ð to enter!\n\n**Prize:** {prize} points\n**Winners:** {winners}\n**Entry Fee:** {entry_fee} points\n**Ends In:** {humanize.naturaltime(end_time)}",
+        description=f"{description} ð\n\nUse `/participa` to enter!\n\n**Prize:** {prize} points\n**Winners:** {winners}\n**Entry Fee:** {entry_fee} points\n**Ends In:** {humanize.naturaltime(end_time)}",
         color=0x00FF00
     )
     embed.set_footer(text=f"Hosted by {user.name}")
 
     message = await ctx.send(embed=embed)
     await message.add_reaction('ð')
-    await message.add_reaction('â')  # AdaugÄ acest emoji pentru a intra Ã®n giveaway
 
     giveaway_data[message.id] = {
         'host': user.id,
@@ -115,37 +110,33 @@ async def giveaway(ctx, duration: str, winners: int, entry_fee: int, prize: int,
         'prize': prize,
         'end_time': end_time,
         'participants': [],
-        'emoji': 'â'  # AdaugÄ aceastÄ linie pentru a pÄstra emoji-ul Ã®n informaÈiile giveaway
+        'emoji': 'ð'
     }
 
 
-@bot.event
-async def on_reaction_add(reaction, user):
-    if user.bot:
-        return
+@bot.command()
+async def participa(ctx):
+    user = ctx.author
+    message_id = ctx.message.reference.message_id if ctx.message.reference else None
 
-    message_id = reaction.message.id
     if message_id in giveaway_data:
         giveaway_info = giveaway_data[message_id]
+        entry_fee = giveaway_info['entry_fee']
 
-        if user.id != giveaway_info['host']:
-            entry_fee = giveaway_info['entry_fee']
-            prize = giveaway_info['prize']
+        cursor.execute("SELECT puncte FROM testbot WHERE nume = %s", (user.name,))
+        row = cursor.fetchone()
 
-            cursor.execute("SELECT puncte FROM testbot WHERE nume = %s", (user.name,))
-            row = cursor.fetchone()
+        if row is not None and row[0] >= entry_fee:
+            new_points = row[0] - entry_fee
+            cursor.execute("UPDATE testbot SET puncte = %s WHERE nume = %s", (new_points, user.name))
+            cnx.commit()
 
-            if row is not None and row[0] >= entry_fee:
-                new_points = row[0] - entry_fee
-                cursor.execute("UPDATE testbot SET puncte = %s WHERE nume = %s", (new_points, user.name))
-                cnx.commit()
+            giveaway_info['participants'].append(user.id)
 
-                giveaway_info['participants'].append(user.id)
-
-                await user.send(f"You've successfully entered the giveaway! You paid {entry_fee} points as an entry fee.")
-                await user.send(f"Good luck! ð")
-            else:
-                await user.send(f"Insufficient points to enter the giveaway. You need {entry_fee} points.")
+            await user.send(f"You've successfully entered the giveaway! You paid {entry_fee} points as an entry fee.")
+            await user.send(f"Good luck! ð")
+        else:
+            await user.send(f"Insufficient points to enter the giveaway. You need {entry_fee} points.")
 
 
 @bot.event
@@ -153,13 +144,5 @@ async def on_bot_close():
     cursor.close()
     cnx.close()
 
-
-def parse_duration(duration: str) -> int:
-    if duration[:-1].isdigit() and duration[-1] == 'm':
-        return int(duration[:-1]) * 60
-    elif duration[:-1].isdigit() and duration[-1] == 'h':
-        return int(duration[:-1]) * 3600
-    else:
-        return None
 
 bot.run('MTE5NTA5MjAwNjM2NDUzMjc5Ng.GsoX4T.ClBOLWX7YhXHFjRNcfHYyrALfyySvr2C8DXbo4')
