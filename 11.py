@@ -16,7 +16,13 @@ config = {
 cnx = mysql.connector.connect(**config)
 cursor = cnx.cursor()
  
-cursor.execute("CREATE TABLE IF NOT EXISTS testbot (id INT(30) AUTO_INCREMENT PRIMARY KEY,nume VARCHAR(50) UNIQUE,puncte INT(100))")
+cursor.execute("""
+    CREATE TABLE IF NOT EXISTS testbot (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        nume VARCHAR(50) UNIQUE,
+        puncte INT
+    )
+""")
 cnx.commit()
  
 @bot.event
@@ -27,16 +33,15 @@ async def on_ready():
 async def register(ctx):
     user = ctx.author
  
-    cursor.execute("SELECT nume FROM testbot WHERE nume = %s", (user.name, ))
-    rows = cursor.fetchall()
+    cursor.execute('SELECT nume FROM testbot WHERE nume = %s', (user.name,))
+    existing_rows = cursor.fetchall()
  
-    for nume in rows:
-        if nume == user.name:
-            await ctx.send(f'{user.name}, esti deja inregistrat! Nu este necesar sa te inregistrezi din nou.')
-        else:
-            cursor.execute('INSERT INTO testbot (id, nume, puncte) VALUES (%s, %s, 0)', (user.id, user.name))
-            cnx.commit()
-            await ctx.send(f'{user.name} a fost inregistrat cu succes!')
+    if existing_rows:
+        await ctx.send(f'{user.name}, esti deja inregistrat! Nu este necesar sa te inregistrezi din nou.')
+    else:
+        cursor.execute('INSERT INTO testbot (nume, puncte) VALUES (%s, 0)', (user.name,))
+        cnx.commit()
+        await ctx.send(f'{user.name} a fost inregistrat cu succes!')
  
 @bot.command()
 async def points(ctx):
@@ -68,4 +73,6 @@ async def give(ctx, user: discord.Member, points: int):
 async def on_bot_close():
     cursor.close()
     cnx.close()
+
+bot.run('TOKENUL_BOTULUI_TAU')
 bot.run('MTE5NTA5MjAwNjM2NDUzMjc5Ng.GsoX4T.ClBOLWX7YhXHFjRNcfHYyrALfyySvr2C8DXbo4')
