@@ -85,14 +85,13 @@ async def give(ctx, user: discord.Member, points: int):
     else:
         await ctx.send(f'Couldn\'t find the player {user.mention} in the database.')
 
-
 @bot.command()
 async def giveaway(ctx, duration: str, winners: int, entry_fee: int, prize: int, description: str):
     user = ctx.author
 
-    if duration[-1] == 'm':
+    if duration.isdigit() and duration[-1] == 'm':
         duration_seconds = int(duration[:-1]) * 60
-    elif duration[-1] == 'h':
+    elif duration.isdigit() and duration[-1] == 'h':
         duration_seconds = int(duration[:-1]) * 3600
     else:
         await ctx.send("Invalid duration format. Use 'Xm' for X minutes or 'Xh' for X hours.")
@@ -101,13 +100,14 @@ async def giveaway(ctx, duration: str, winners: int, entry_fee: int, prize: int,
     end_time = datetime.utcnow() + timedelta(seconds=duration_seconds)
 
     embed = discord.Embed(
-        title="Giveaway",description=f"{description}\n\nReact with :tada: to enter!\n\n**Prize:** {prize} points\n**Winners:** {winners}\n**Entry Fee:** {entry_fee} points\n**Ends In:** {humanize.naturaltime(end_time)}",
+        title="Giveaway",
+        description=f"{description} ð\n\nReact with ð to enter!\n\n**Prize:** {prize} points\n**Winners:** {winners}\n**Entry Fee:** {entry_fee} points\n**Ends In:** {humanize.naturaltime(end_time)}",
         color=0x00FF00
     )
     embed.set_footer(text=f"Hosted by {user.name}")
 
     message = await ctx.send(embed=embed)
-    await message.add_reaction(':tada:')
+    await message.add_reaction('ð')
 
     giveaway_data[message.id] = {
         'host': user.id,
@@ -117,7 +117,6 @@ async def giveaway(ctx, duration: str, winners: int, entry_fee: int, prize: int,
         'end_time': end_time,
         'participants': []
     }
-
 
 @bot.event
 async def on_reaction_add(reaction, user):
@@ -147,7 +146,6 @@ async def on_reaction_add(reaction, user):
             else:
                 await user.send(f"Insufficient points to enter the giveaway. You need {entry_fee} points.")
 
-            await reaction.remove(bot.user)
 @bot.event
 async def on_bot_close():
     cursor.close()
