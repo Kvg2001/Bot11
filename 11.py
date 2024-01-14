@@ -18,7 +18,6 @@ cursor = cnx.cursor()
  
 cursor.execute("""
     CREATE TABLE IF NOT EXISTS testbot (
-        id INT AUTO_INCREMENT PRIMARY KEY,
         nume VARCHAR(50) UNIQUE,
         puncte INT
     )
