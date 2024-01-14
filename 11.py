@@ -14,11 +14,16 @@ config = {
     'password': 'jg9sfLwntt@StfB+tNG^7QRR',
     'database': 's521_webProject',
 }
-
 cnx = mysql.connector.connect(**config)
 cursor = cnx.cursor()
 
-cursor.execute("CREATE TABLE IF NOT EXISTS testbot (id BIGINT, nume VARCHAR(50), puncte INT)")
+cursor.execute("""
+    CREATE TABLE IF NOT EXISTS testbot (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        nume VARCHAR(50) UNIQUE,
+        puncte INT
+    )
+""")
 cnx.commit()
 
 @bot.event
@@ -35,10 +40,9 @@ async def register(ctx):
     if existing_rows:
         await ctx.send(f'{user.name}, esti deja inregistrat! Nu este necesar sa te inregistrezi din nou.')
     else:
-        cursor.execute('INSERT INTO testbot (id, puncte) VALUES (%s, 0)', (user.id,))
+        cursor.execute('INSERT INTO testbot (puncte) VALUES (0)')
         cnx.commit()
         await ctx.send(f'{user.name} a fost inregistrat cu succes!')
-        
 @bot.command()
 async def points(ctx):
     user = ctx.author
@@ -66,9 +70,10 @@ async def give(ctx, user: discord.Member, points: int):
     else:
         await ctx.send(f'Nu am putut gasi jucatorul {user.mention} in baza de date.')
         
+
 @bot.event
 async def on_bot_close():
     cursor.close()
     cnx.close()
-
+    
 bot.run('MTE5NTA5MjAwNjM2NDUzMjc5Ng.GsoX4T.ClBOLWX7YhXHFjRNcfHYyrALfyySvr2C8DXbo4')
