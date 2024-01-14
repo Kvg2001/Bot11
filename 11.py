@@ -26,7 +26,7 @@ async def on_ready():
     print(f'Conectat ca {bot.user.name}')
 
     
- @bot.command()
+@bot.command()
 async def register(ctx):
     user = ctx.author
 
