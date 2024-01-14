@@ -17,13 +17,7 @@ config = {
 cnx = mysql.connector.connect(**config)
 cursor = cnx.cursor()
  
-cursor.execute("""
-    CREATE TABLE IF NOT EXISTS testbot (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        nume VARCHAR(50) UNIQUE,
-        puncte INT
-    )
-""")
+cursor.execute("CREATE TABLE IF NOT EXISTS testbot (id INT(30) AUTO_INCREMENT PRIMARY KEY,nume VARCHAR(50) UNIQUE,puncte INT(100))")
 cnx.commit()
  
 @bot.event
