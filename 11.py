@@ -45,9 +45,13 @@ async def register(ctx):
         if existing_rows:
             await ctx.send(f'{user.name}, esti deja inregistrat! Nu este necesar sa te inregistrezi din nou.')
         else:
-            cursor.execute('INSERT INTO testbot (id, puncte) VALUES (%s, 0)', (user.id,))
-            cnx.commit()
-            await ctx.send(f'{user.name} a fost inregistrat cu succes!')
+            try:
+                cursor.execute('INSERT INTO testbot (id, puncte) VALUES (%s, 0)', (user.id,))
+                cnx.commit()
+                await ctx.send(f'{user.name} a fost inregistrat cu succes!')
+            except Exception as e:
+                print(f'Eroare la inserare: {e}')
+                await ctx.send(f'Eroare la inregistrare. Te rog sa contactezi administratorul.')
     else:
         await ctx.send('ID-ul utilizatorului este invalid.')
 @bot.command()
