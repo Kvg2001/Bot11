@@ -97,7 +97,6 @@ async def giveaway(ctx, duration: str, winners: int, entry_fee: int, prize: int,
     else:
        await ctx.send("Invalid duration format. Use 'm' for minutes or 'h' for hours.")
     return
-        return
 
     end_time = datetime.utcnow() + timedelta(seconds=duration_seconds)
 
