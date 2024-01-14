@@ -26,7 +26,7 @@ async def on_ready():
     print(f'Conectat ca {bot.user.name}')
 
     
-@bot.command()
+ @bot.command()
 async def register(ctx):
     user = ctx.author
 
@@ -38,7 +38,7 @@ async def register(ctx):
     else:
         cursor.execute('INSERT INTO testbot (id, nume, puncte) VALUES (%s, %s, 0)', (user.id, user.name))
         cnx.commit()
-        await ctx.send(f'{user.name} a fost inregistrat cu succes!')
+        await ctx.send(f'{user.name} a fost inregistrat cu succes!')       
         
 @bot.command()
 async def points(ctx):
