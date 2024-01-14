@@ -45,10 +45,12 @@ async def register(ctx):
 async def points(ctx):
     user = ctx.author
     cursor.execute("SELECT puncte FROM testbot WHERE nume = %s", (user.name,))
-    rows = cursor.fetchall()
+    row = cursor.fetchone()
 
-    for puncte in rows:
-        await ctx.send(f'Jucatorul *{user.name}* are ```{puncte[0]}``` puncte!')
+    if row is not None:
+        await ctx.send(f'Jucatorul *{user.name}* are ```{row[0]}``` puncte!')
+    else:
+        await ctx.send(f'Nu am putut gasi jucatorul {user.mention} in baza de date.')
 
 @bot.command()
 async def give(ctx, user: discord.Member, points: int):
