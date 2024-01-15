@@ -95,13 +95,13 @@ async def giveaway(ctx, hours: int, minutes: int, winners: int, entry_fee: int, 
 
     embed = discord.Embed(
         title="Giveaway",
-        description=f"{description} ð\n\nUse `/participa` to enter!\n\n**Prize:** {prize} points\n**Winners:** {winners}\n**Entry Fee:** {entry_fee} points\n**Ends In:** {humanize.naturaltime(end_time)}",
+        description=f"{description} :tada:\n\nUse `/participa` to enter!\n\n**Prize:** {prize} points\n**Winners:** {winners}\n**Entry Fee:** {entry_fee} points\n**Ends In:** {humanize.naturaltime(end_time)}",
         color=0x00FF00
     )
     embed.set_footer(text=f"Hosted by {user.name}")
 
     message = await ctx.send(embed=embed)
-    await message.add_reaction('ð')
+    await message.add_reaction(':tada:')
 
     giveaway_data[message.id] = {
         'host': user.id,
@@ -110,7 +110,7 @@ async def giveaway(ctx, hours: int, minutes: int, winners: int, entry_fee: int, 
         'prize': prize,
         'end_time': end_time,
         'participants': [],
-        'emoji': 'ð'
+        'emoji': ':tada:'
     }
 
 
@@ -134,7 +134,7 @@ async def participa(ctx):
             giveaway_info['participants'].append(user.id)
 
             await user.send(f"You've successfully entered the giveaway! You paid {entry_fee} points as an entry fee.")
-            await user.send(f"Good luck! ð")
+            await user.send(f"Good luck! :tada:")
         else:
             await user.send(f"Insufficient points to enter the giveaway. You need {entry_fee} points.")
 
