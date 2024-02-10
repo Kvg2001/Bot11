@@ -145,4 +145,4 @@ async def on_bot_close():
     cnx.close()
 
 
-bot.run(''MTIwNTk0MzUxNzMxOTM5NzUyNg.GGbYUv.6Q6BPrwVzA9qHtcEoqvJ1mtmGPMUAG44PUZRCc)
+bot.run('MTIwNTk0MzUxNzMxOTM5NzUyNg.GGbYUv.6Q6BPrwVzA9qHtcEoqvJ1mtmGPMUAG44PUZRCc')
