@@ -10,9 +10,9 @@ intents.message_content = True
 bot = commands.Bot(command_prefix='/', intents=intents)
 
 config = {
-    'host': 'localhost:3306',
+    'host': '193.84.64.16',
     'user': 'extaziu2_bot',
-    'password': 'mada2005!',
+    'password': 'andrei2001!',
     'database': 'extaziu2_bot',
 }
 cnx = mysql.connector.connect(**config)
