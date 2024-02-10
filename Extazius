@@ -11,9 +11,9 @@ bot = commands.Bot(command_prefix='/', intents=intents)
 
 config = {
     'host': '193.84.64.16',
-    'user': 'extaziu2_bot',
-    'password': 'andrei2001!',
-    'database': 'extaziu2_bot',
+    'user': 'extaziu2_2',
+    'password': 'mada2005!',
+    'database': 'extaziu2_2',
 }
 cnx = mysql.connector.connect(**config)
 cursor = cnx.cursor()
