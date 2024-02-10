@@ -95,13 +95,13 @@ async def giveaway(ctx, hours: int, minutes: int, winners: int, entry_fee: int, 
 
     embed = discord.Embed(
         title="Giveaway",
-        description=f"{description} :tada:\n\nUse `/participa` to enter!\n\n**Prize:** {prize} points\n**Winners:** {winners}\n**Entry Fee:** {entry_fee} points\n**Ends In:** {humanize.naturaltime(end_time)}",
+        description=f"{description} \n\nUse ✅ to enter!\n\n**Prize:** {prize} points\n**Winners:** {winners}\n**Entry Fee:** {entry_fee} points\n**Ends In:** {humanize.naturaltime(end_time)}",
         color=0x00FF00
     )
     embed.set_footer(text=f"Hosted by {user.name}")
 
     message = await ctx.send(embed=embed)
-    await message.add_reaction(':tada:')
+    await message.add_reaction('✅')
 
     giveaway_data[message.id] = {
         'host': user.id,
