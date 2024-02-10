@@ -10,7 +10,7 @@ intents.message_content = True
 bot = commands.Bot(command_prefix='/', intents=intents)
 
 config = {
-    'host': 'extazius-host.ro:2083',
+    'host': 'localhost:3306',
     'user': 'extaziu2_bot',
     'password': 'mada2005!',
     'database': 'extaziu2_bot',
