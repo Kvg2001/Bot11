@@ -111,7 +111,7 @@ async def giveaway(ctx, duration: int, winners: int, entry_fee: int, prize: int,
 
     embed = discord.Embed(
         title="Giveaway",
-        description=f"{description} \n\nUse ✅ to enter!\n\n**Prize:** {prize} points\n**Winners:** {winners}\n**Entry Fee:** {entry_fee} points\n**Ends In:** {total_duration}",
+        description=f"{description} \n\nUse ✅ to enter!\n\n**Prize:** {prize} points\n**Winners:** {winners}\n**Entry Fee:** {entry_fee} points\n**Ends In:** {format_timedelta(total_duration)}",
         color=0x00FF00
     )
     embed.set_footer(text=f"Hosted by {user.name}")
@@ -129,39 +129,22 @@ async def giveaway(ctx, duration: int, winners: int, entry_fee: int, prize: int,
         'emoji': '✅'
     }
 
-    # Așteaptă înainte de a alege câștigătorii
-    await asyncio.sleep(total_duration.total_seconds())
-    # Alege câștigătorii
+    # Actualizează mesajul în fiecare minut
+    while total_duration.total_seconds() > 0:
+        remaining_time_str = format_timedelta(total_duration)
+        embed.description = f"{description} \n\nUse ✅ to enter!\n\n**Prize:** {prize} points\n**Winners:** {winners}\n**Entry Fee:** {entry_fee} points\n**Ends In:** {remaining_time_str}"
+        await message.edit(embed=embed)
+        await asyncio.sleep(60)  # Așteaptă un minut între actualizări
+        total_duration -= timedelta(minutes=1)
+
+    # Alege câștigătorii la sfârșitul giveaway-ului
     await choose_winner(ctx, message.id)
 
 
-@bot.command()
-async def status(ctx):
-    message_id = ctx.message.id
-
-    if message_id in giveaway_data:
-        giveaway_info = giveaway_data[message_id]
-        end_time = giveaway_info['end_time']
-        participants_count = len(giveaway_info['participants'])
-        entry_fee = giveaway_info['entry_fee']
-        prize = giveaway_info['prize']
-
-        remaining_time = end_time - datetime.utcnow()
-        await asyncio.sleep(remaining_time.total_seconds())
-        remaining_time_str = "0s"
-
-        embed = discord.Embed(
-            title="Giveaway Status",
-            description=f"**Remaining Time:** {remaining_time_str}\n"
-                        f"**Participants:** {participants_count}\n"
-                        f"**Entry Fee:** {entry_fee} points\n"
-                        f"**Prize:** {prize} points",
-            color=0xFFD700  # Gold color
-        )
-
-        await ctx.send(embed=embed)
-    else:
-    	await ctx.send("There is no active giveaway at the moment.")
+def format_timedelta(delta):
+    hours, remainder = divmod(delta.seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    return f"{delta.days} days, {hours} hours, {minutes} minutes, {seconds} seconds"
 
 
 @bot.event
@@ -194,7 +177,5 @@ async def on_reaction_add(reaction, user):
 @bot.event
 async def on_bot_close():
     cursor.close()
-    cnx.close()
-    await bot.close()
-
+    cnx.close
 bot.run('MTIwNTk0MzUxNzMxOTM5NzUyNg.GGbYUv.6Q6BPrwVzA9qHtcEoqvJ1mtmGPMUAG44PUZRCc')
