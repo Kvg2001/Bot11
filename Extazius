@@ -109,8 +109,7 @@ async def choose_winner(ctx, message_id):
             cnx.commit()
 
     winners_mentions = [f"<@{winner}>" for winner in winners]
-    await ctx.send(f"Congratulations {', '.join(winners_mentions)}! You've won the giveaway!")
-
+    await ctx.send(f"Felicitări {', '.join(winners_mentions)}! Ai câștigat giveaway-ul!")
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def giveaway(ctx, duration: int, winners: int, entry_fee: int, prize: int, description: str):
