@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands
 import mysql.connector
 from datetime import datetime, timedelta
-import humanize
 import random
 import asyncio
 
@@ -62,12 +61,14 @@ async def points(ctx):
     else:
         await ctx.send(f'Couldn\'t find the player {user.mention} in the database.')
 
+
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def setpoints(ctx, user: discord.Member, points: int):
     cursor.execute("UPDATE testbot SET puncte = %s WHERE nume = %s", (points, user.name))
     cnx.commit()
     await ctx.send(f'Points for {user.mention} have been set to `{points}`!')
+
 
 @bot.command()
 @commands.has_permissions(administrator=True)
@@ -85,6 +86,7 @@ async def give(ctx, user: discord.Member, points: int):
     else:
         await ctx.send(f'Couldn\'t find the player {user.mention} in the database.')
 
+
 async def choose_winner(ctx, message_id):
     giveaway_info = giveaway_data[message_id]
     participants = giveaway_info['participants']
@@ -98,7 +100,10 @@ async def choose_winner(ctx, message_id):
     winners_mentions = [f"<@{winner}>" for winner in winners]
 
     await ctx.send(f"Congratulations {', '.join(winners_mentions)}! You've won the giveaway!")
+
+
 @bot.command()
+@commands.has_permissions(administrator=True)
 async def giveaway(ctx, duration: int, winners: int, entry_fee: int, prize: int, description: str):
     user = ctx.author
 
@@ -106,7 +111,7 @@ async def giveaway(ctx, duration: int, winners: int, entry_fee: int, prize: int,
 
     embed = discord.Embed(
         title="Giveaway",
-        description=f"{description} \n\nUse ✅ to enter!\n\n**Prize:** {prize} points\n**Winners:** {winners}\n**Entry Fee:** {entry_fee} points\n**Ends In:** {humanize.naturaltime(datetime.utcnow() + total_duration)}",
+        description=f"{description} \n\nUse ✅ to enter!\n\n**Prize:** {prize} points\n**Winners:** {winners}\n**Entry Fee:** {entry_fee} points\n**Ends In:** {total_duration}",
         color=0x00FF00
     )
     embed.set_footer(text=f"Hosted by {user.name}")
@@ -124,20 +129,9 @@ async def giveaway(ctx, duration: int, winners: int, entry_fee: int, prize: int,
         'emoji': '✅'
     }
 
-    while datetime.utcnow() < giveaway_data[message.id]['end_time']:
-        remaining_time = giveaway_data[message.id]['end_time'] - datetime.utcnow()
-        await asyncio.sleep(60)  # așteaptă un minut
-
-        updated_embed = discord.Embed(
-            title="Giveaway",
-            description=f"{description} \n\nUse ✅ to enter!\n\n**Prize:** {prize} points\n**Winners:** {winners}\n**Entry Fee:** {entry_fee} points\n**Ends In:** {humanize.naturaltime(datetime.utcnow() + remaining_time)}",
-            color=0x00FF00
-        )
-        updated_embed.set_footer(text=f"Hosted by {user.name}")
-
-        await message.edit(embed=updated_embed)
-
-    # Alege câștigătorii la final
+    # Așteaptă înainte de a alege câștigătorii
+    await asyncio.sleep(total_duration.total_seconds())
+    # Alege câștigătorii
     await choose_winner(ctx, message.id)
 
 
@@ -185,7 +179,17 @@ async def on_reaction_add(reaction, user):
 
         if row is not None and row[0] >= entry_fee:
             new_points = row[0] - entry_fee
-            cursor.execute("UPDATE testbot SET puncte = %
+            cursor.execute("UPDATE testbot SET puncte = %s WHERE nume = %s", (new_points, user.name))
+            cnx.commit()
+
+            giveaway_info['participants'].append(user.id)
+
+            await user.send(f"You've successfully entered the giveaway! You paid {entry_fee} points as an entry fee.")
+            await user.send(f"Good luck! ✅")
+        else:
+            await user.send(f"Insufficient points to enter the giveaway. You need {entry_fee} points.")
+            await reaction.remove(user)  # Remove the reaction if entry is not successful
+
 
 @bot.event
 async def on_bot_close():
