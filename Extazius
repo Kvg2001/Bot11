@@ -88,15 +88,23 @@ async def give(ctx, user: discord.Member, points: int):
 
 @bot.command()
 @commands.has_permissions(administrator=True)
-async def giveaway(ctx, minutes: int, winners: int, entry_fee: int, prize: int, description: str):
+async def giveaway(ctx, duration: str, winners: int, entry_fee: int, prize: int, description: str):
     user = ctx.author
 
-    duration_seconds = minutes * 60
-    end_time = datetime.utcnow() + timedelta(seconds=duration_seconds)
+    def parse_duration(duration):
+        duration_multiplier = {'m': 60, 'h': 3600, 'd': 86400}
+        suffix = duration[-1]
+
+        if suffix in duration_multiplier:
+            return int(duration[:-1]) * duration_multiplier[suffix]
+
+        return int(duration)
+
+    total_duration = parse_duration(duration)
 
     embed = discord.Embed(
         title="Giveaway",
-        description=f"{description} \n\nUse ✅ to enter!\n\n**Prize:** {prize} points\n**Winners:** {winners}\n**Entry Fee:** {entry_fee} points\n**Ends In:** {humanize.naturaltime(end_time)}",
+        description=f"{description} \n\nUse ✅ to enter!\n\n**Prize:** {prize} points\n**Winners:** {winners}\n**Entry Fee:** {entry_fee} points\n**Ends In:** {humanize.naturaltime(datetime.utcnow() + timedelta(seconds=total_duration))}",
         color=0x00FF00
     )
     embed.set_footer(text=f"Hosted by {user.name}")
@@ -109,7 +117,7 @@ async def giveaway(ctx, minutes: int, winners: int, entry_fee: int, prize: int, 
         'winners': winners,
         'entry_fee': entry_fee,
         'prize': prize,
-        'end_time': end_time,
+        'end_time': datetime.utcnow() + timedelta(seconds=total_duration),
         'participants': [],
         'emoji': '✅'
     }
