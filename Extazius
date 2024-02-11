@@ -88,7 +88,7 @@ async def give(ctx, user: discord.Member, points: int):
 
 
 async def choose_winner(ctx, message_id):
-    gasync def choose_winner(ctx, message_id):
+    async def choose_winner(ctx, message_id):
     giveaway_info = giveaway_data[message_id]
     participants = giveaway_info['participants']
     winners_count = giveaway_info['winners']
