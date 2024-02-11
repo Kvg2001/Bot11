@@ -3,6 +3,8 @@ from discord.ext import commands
 import mysql.connector
 from datetime import datetime, timedelta
 import humanize
+import random
+import asyncio
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -86,25 +88,40 @@ async def give(ctx, user: discord.Member, points: int):
         await ctx.send(f'Couldn\'t find the player {user.mention} in the database.')
 
 
+async def choose_winner(ctx, message_id):
+    giveaway_info = giveaway_data[message_id]
+    participants = giveaway_info['participants']
+    winners_count = giveaway_info['winners']
+
+    if len(participants) < winners_count:
+        winners_count = len(participants)
+
+    winners = random.sample(participants, winners_count)
+
+    winners_mentions = [f"<@{winner}>" for winner in winners]
+
+    await ctx.send(f"Congratulations {', '.join(winners_mentions)}! You've won the giveaway!")
+
+
 @bot.command()
 @commands.has_permissions(administrator=True)
-async def giveaway(ctx, duration: str, winners: int, entry_fee: int, prize: int, description: str):
+async def giveaway(ctx, duration: int, winners: int, entry_fee: int, prize: int, description: str):
     user = ctx.author
 
-    def parse_duration(duration):
-        duration_multiplier = {'m': 60, 'h': 3600, 'd': 86400}
-        suffix = duration[-1]
-
-        if suffix in duration_multiplier:
-            return int(duration[:-1]) * duration_multiplier[suffix]
-
-        return int(duration)
-
-    total_duration = parse_duration(duration)
+    # Ajustarea duratei giveaway-ului la 5, 10 sau 15 minute
+    if duration == 5:
+        total_duration = timedelta(minutes=5)
+    elif duration == 10:
+        total_duration = timedelta(minutes=10)
+    elif duration == 15:
+        total_duration = timedelta(minutes=15)
+    else:
+        # Valoare implicită dacă nu este specificată nicio durată validă
+        total_duration = timedelta(minutes=5)  # sau orice altă valoare implicită dorită
 
     embed = discord.Embed(
         title="Giveaway",
-        description=f"{description} \n\nUse ✅ to enter!\n\n**Prize:** {prize} points\n**Winners:** {winners}\n**Entry Fee:** {entry_fee} points\n**Ends In:** {humanize.naturaltime(datetime.utcnow() + timedelta(seconds=total_duration))}",
+        description=f"{description} \n\nUse ✅ to enter!\n\n**Prize:** {prize} points\n**Winners:** {winners}\n**Entry Fee:** {entry_fee} points\n**Ends In:** {humanize.naturaltime(datetime.utcnow() + total_duration)}",
         color=0x00FF00
     )
     embed.set_footer(text=f"Hosted by {user.name}")
@@ -117,10 +134,45 @@ async def giveaway(ctx, duration: str, winners: int, entry_fee: int, prize: int,
         'winners': winners,
         'entry_fee': entry_fee,
         'prize': prize,
-        'end_time': datetime.utcnow() + timedelta(seconds=total_duration),
+        'end_time': datetime.utcnow() + total_duration,
         'participants': [],
         'emoji': '✅'
     }
+
+    # Așteaptă înainte de a alege câștigătorii
+    await asyncio.sleep(total_duration.total_seconds())
+
+    # Alege câștigătorii
+    await choose_winner(ctx, message.id)
+
+
+@bot.command()
+async def status(ctx):
+    message_id = ctx.message.id
+
+    if message_id in giveaway_data:
+        giveaway_info = giveaway_data[message_id]
+        end_time = giveaway_info['end_time']
+        participants_count = len(giveaway_info['participants'])
+        entry_fee = giveaway_info['entry_fee']
+        prize = giveaway_info['prize']
+
+        remaining_time = end_time - datetime.utcnow()
+        remaining_time_str = humanize.naturaldelta(remaining_time)
+
+        embed = discord.Embed(
+            title="Giveaway Status",
+            description=f"**Remaining Time:** {remaining_time_str}\n"
+                        f"**Participants:** {participants_count}\n"
+                        f"**Entry Fee:** {entry_fee} points\n"
+                        f"**Prize:** {prize} points",
+            color=0xFFD700  # Gold color
+        )
+
+        await ctx.send(embed=embed)
+    else:
+    	await ctx.send("There is no active giveaway at the moment.")
+
 
 @bot.event
 async def on_reaction_add(reaction, user):
@@ -147,6 +199,7 @@ async def on_reaction_add(reaction, user):
         else:
             await user.send(f"Insufficient points to enter the giveaway. You need {entry_fee} points.")
             await reaction.remove(user)  # Remove the reaction if entry is not successful
+
 
 @bot.event
 async def on_bot_close():
