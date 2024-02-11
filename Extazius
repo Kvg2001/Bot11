@@ -138,6 +138,31 @@ async def participa(ctx):
         else:
             await user.send(f"Insufficient points to enter the giveaway. You need {entry_fee} points.")
 
+@bot.event
+async def on_reaction_add(reaction, user):
+    if user.bot:  # Ignoră reacțiile de la bot
+        return
+
+    message_id = reaction.message.id
+    if message_id in giveaway_data:
+        giveaway_info = giveaway_data[message_id]
+        entry_fee = giveaway_info['entry_fee']
+
+        cursor.execute("SELECT puncte FROM testbot WHERE nume = %s", (user.name,))
+        row = cursor.fetchone()
+
+        if row is not None and row[0] >= entry_fee:
+            new_points = row[0] - entry_fee
+            cursor.execute("UPDATE testbot SET puncte = %s WHERE nume = %s", (new_points, user.name))
+            cnx.commit()
+
+            giveaway_info['participants'].append(user.id)
+
+            await user.send(f"You've successfully entered the giveaway! You paid {entry_fee} points as an entry fee.")
+            await user.send(f"Good luck! ✅")
+        else:
+            await user.send(f"Insufficient points to enter the giveaway. You need {entry_fee} points.")
+            await reaction.remove(user)  # Remove the reaction if entry is not successful
 
 @bot.event
 async def on_bot_close():
