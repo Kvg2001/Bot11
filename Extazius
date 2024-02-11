@@ -97,10 +97,19 @@ async def choose_winner(ctx, message_id):
 
     winners = random.sample(participants, winners_count)
 
+    for winner_id in winners:
+        # Actualizează punctele pentru câștigători în baza de date
+        cursor.execute("SELECT puncte FROM testbot WHERE nume = %s", (winner_id,))
+        row = cursor.fetchone()
+
+        if row is not None:
+            old_points = row[0]
+            new_points = old_points + giveaway_info['prize']
+            cursor.execute("UPDATE testbot SET puncte = %s WHERE nume = %s", (new_points, winner_id))
+            cnx.commit()
+
     winners_mentions = [f"<@{winner}>" for winner in winners]
-
     await ctx.send(f"Congratulations {', '.join(winners_mentions)}! You've won the giveaway!")
-
 
 @bot.command()
 @commands.has_permissions(administrator=True)
