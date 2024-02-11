@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands
 import mysql.connector
 from datetime import datetime, timedelta
-import humanize
 import random
 import asyncio
 
@@ -30,11 +29,9 @@ cnx.commit()
 
 giveaway_data = {}
 
-
 @bot.event
 async def on_ready():
     print(f'Connected as {bot.user.name}')
-
 
 @bot.command()
 async def register(ctx):
@@ -49,7 +46,6 @@ async def register(ctx):
         cursor.execute('INSERT INTO testbot (nume, puncte) VALUES (%s, 0)', (user.name,))
         cnx.commit()
         await ctx.send(f'{user.name} has been registered successfully!')
-
 
 @bot.command()
 async def points(ctx):
@@ -94,7 +90,6 @@ async def choose_winner(ctx, message_id):
         winners_count = len(participants)
 
     winners = random.sample(participants, winners_count)
-
     winners_mentions = [f"<@{winner}>" for winner in winners]
 
     await ctx.send(f"Congratulations {', '.join(winners_mentions)}! You've won the giveaway!")
@@ -108,7 +103,7 @@ async def giveaway(ctx, duration: int, winners: int, entry_fee: int, prize: int,
 
     embed = discord.Embed(
         title="Giveaway",
-        description=f"{description} \n\nUse ✅ to enter!\n\n**Prize:** {prize} points\n**Winners:** {winners}\n**Entry Fee:** {entry_fee} points\n**Ends In:** {humanize.naturaltime(datetime.utcnow() + total_duration)}",
+        description=f"{description} \n\nUse ✅ to enter!\n\n**Prize:** {prize} points\n**Winners:** {winners}\n**Entry Fee:** {entry_fee} points\n**Ends In:** {total_duration}",
         color=0x00FF00
     )
     embed.set_footer(text=f"Hosted by {user.name}")
@@ -130,7 +125,6 @@ async def giveaway(ctx, duration: int, winners: int, entry_fee: int, prize: int,
     await asyncio.sleep(total_duration.total_seconds())
     # Alege câștigătorii
     await choose_winner(ctx, message.id)
-
 
 @bot.command()
 async def status(ctx):
@@ -160,7 +154,6 @@ async def status(ctx):
     else:
     	await ctx.send("There is no active giveaway at the moment.")
 
-
 @bot.event
 async def on_reaction_add(reaction, user):
     if user.bot:  # Ignoră reacțiile de la bot
@@ -187,11 +180,9 @@ async def on_reaction_add(reaction, user):
             await user.send(f"Insufficient points to enter the giveaway. You need {entry_fee} points.")
             await reaction.remove(user)  # Remove the reaction if entry is not successful
 
-
 @bot.event
 async def on_bot_close():
     cursor.close()
     cnx.close()
-
 
 bot.run('MTIwNTk0MzUxNzMxOTM5NzUyNg.GGbYUv.6Q6BPrwVzA9qHtcEoqvJ1mtmGPMUAG44PUZRCc')
