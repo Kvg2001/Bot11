@@ -87,10 +87,11 @@ async def give(ctx, user: discord.Member, points: int):
 
 
 @bot.command()
-async def giveaway(ctx, hours: int, minutes: int, winners: int, entry_fee: int, prize: int, description: str):
+@commands.has_permissions(administrator=True)
+async def giveaway(ctx, minutes: int, winners: int, entry_fee: int, prize: int, description: str):
     user = ctx.author
 
-    duration_seconds = (hours * 3600) + (minutes * 60)
+    duration_seconds = minutes * 60
     end_time = datetime.utcnow() + timedelta(seconds=duration_seconds)
 
     embed = discord.Embed(
@@ -110,33 +111,8 @@ async def giveaway(ctx, hours: int, minutes: int, winners: int, entry_fee: int, 
         'prize': prize,
         'end_time': end_time,
         'participants': [],
-        'emoji': ':tada:'
+        'emoji': '✅'
     }
-
-
-@bot.command()
-async def participa(ctx):
-    user = ctx.author
-    message_id = ctx.message.reference.message_id if ctx.message.reference else None
-
-    if message_id in giveaway_data:
-        giveaway_info = giveaway_data[message_id]
-        entry_fee = giveaway_info['entry_fee']
-
-        cursor.execute("SELECT puncte FROM testbot WHERE nume = %s", (user.name,))
-        row = cursor.fetchone()
-
-        if row is not None and row[0] >= entry_fee:
-            new_points = row[0] - entry_fee
-            cursor.execute("UPDATE testbot SET puncte = %s WHERE nume = %s", (new_points, user.name))
-            cnx.commit()
-
-            giveaway_info['participants'].append(user.id)
-
-            await user.send(f"You've successfully entered the giveaway! You paid {entry_fee} points as an entry fee.")
-            await user.send(f"Good luck! :tada:")
-        else:
-            await user.send(f"Insufficient points to enter the giveaway. You need {entry_fee} points.")
 
 @bot.event
 async def on_reaction_add(reaction, user):
