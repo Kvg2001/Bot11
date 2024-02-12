@@ -22,7 +22,7 @@ cursor = cnx.cursor()
 cursor.execute("""
     CREATE TABLE IF NOT EXISTS testbot (
         nume VARCHAR(50) UNIQUE,
-        puncte INT
+        puncte INT(25), winner_id INT(125)
     )
 """)
 cnx.commit()
