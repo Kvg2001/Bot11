@@ -85,10 +85,7 @@ async def give(ctx, user: discord.Member, points: int):
         await ctx.send(f'Points for {user.mention} have been updated to `{new_points}`!')
     else:
         await ctx.send(f'Couldn\'t find the player {user.mention} in the database.')
-
-
 async def choose_winner(ctx, message_id):
-    async def choose_winner(ctx, message_id):
     giveaway_info = giveaway_data[message_id]
     participants = giveaway_info['participants']
     winners_count = giveaway_info['winners']
@@ -115,6 +112,9 @@ async def choose_winner(ctx, message_id):
 
     winners_mentions = [f"<@{winner}>" for winner in winners]
     await ctx.send(f"Congratulations {', '.join(winners_mentions)}! You've won the giveaway!")
+
+    # Adaugă aici orice alt cod sau acțiuni pe care dorești să le realizezi după ce giveaway-ul a fost câștigat
+
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def giveaway(ctx, duration: int, winners: int, entry_fee: int, prize: int, description: str):
