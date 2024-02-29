@@ -11,10 +11,10 @@ intents.message_content = True
 bot = commands.Bot(command_prefix='/', intents=intents)
 
 config = {
-    'host': '193.84.64.16',
-    'user': 'extaziu2_2',
-    'password': 'extazius123!',
-    'database': 'extaziu2_2',
+    'host': '93.115.101.23',
+    'user': 'u539_9SW9oXtzZ4',
+    'password': '^Xvn8lXf1.R^1pQHuR7jJzkK',
+    'database': 's539_giveaway',
 }
 cnx = mysql.connector.connect(**config)
 cursor = cnx.cursor()
@@ -29,27 +29,22 @@ cnx.commit()
 
 giveaway_data = {}
 
-
 @bot.event
 async def on_ready():
     print(f'Connected as {bot.user.name}')
 
-
 @bot.command()
 async def register(ctx):
     user = ctx.author
-
     cursor.execute('SELECT nume FROM testbot WHERE nume = %s', (user.name,))
     existing_rows = cursor.fetchall()
-
     if existing_rows:
         await ctx.send(f'{user.name}, you are already registered! No need to register again.')
     else:
         cursor.execute('INSERT INTO testbot (nume, puncte) VALUES (%s, 0)', (user.name,))
         cnx.commit()
         await ctx.send(f'{user.name} has been registered successfully!')
-
-
+      
 @bot.command()
 async def points(ctx):
     user = ctx.author
@@ -61,7 +56,6 @@ async def points(ctx):
     else:
         await ctx.send(f'Couldn\'t find the player {user.mention} in the database.')
 
-
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def setpoints(ctx, user: discord.Member, points: int):
@@ -69,69 +63,53 @@ async def setpoints(ctx, user: discord.Member, points: int):
     cnx.commit()
     await ctx.send(f'Points for {user.mention} have been set to `{points}`!')
 
-
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def give(ctx, user: discord.Member, points: int):
     cursor.execute("SELECT puncte FROM testbot WHERE nume = %s", (user.name,))
     row = cursor.fetchone()
-
     if row is not None:
         old_points = row[0]
         new_points = old_points + points
-
         cursor.execute("UPDATE testbot SET puncte = %s WHERE nume = %s", (new_points, user.name))
         cnx.commit()
         await ctx.send(f'Points for {user.mention} have been updated to `{new_points}`!')
     else:
         await ctx.send(f'Couldn\'t find the player {user.mention} in the database.')
-async def choose_winner(ctx, message_id):
-    giveaway_info = giveaway_data[message_id]
+
+async def choose_winner(ctx, giveaway_id):
+    giveaway_info = giveaway_data[giveaway_id]
     participants = giveaway_info['participants']
     winners_count = giveaway_info['winners']
-
     if len(participants) < winners_count:
         winners_count = len(participants)
-
     winners = random.sample(participants, winners_count)
-
     for winner_id in winners:
-        # Verifică dacă utilizatorul câștigător există în baza de date
         cursor.execute("SELECT puncte FROM testbot WHERE nume = %s", (winner_id,))
         row = cursor.fetchone()
-
         if row is not None:
             old_points = row[0]
             new_points = old_points + giveaway_info['prize']
-            # Actualizează punctele pentru câștigător în baza de date
             cursor.execute("UPDATE testbot SET puncte = %s WHERE nume = %s", (new_points, winner_id))
             cnx.commit()
         else:
-            # Dacă utilizatorul nu există în baza de date, poți afișa un mesaj sau face altceva
             print(f"Winner with ID {winner_id} not found in the database.")
-
     winners_mentions = [f"<@{winner}>" for winner in winners]
     await ctx.send(f"Congratulations {', '.join(winners_mentions)}! You've won the giveaway!")
-
-    # Adaugă aici orice alt cod sau acțiuni pe care dorești să le realizezi după ce giveaway-ul a fost câștigat
 
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def giveaway(ctx, duration: int, winners: int, entry_fee: int, prize: int, description: str):
     user = ctx.author
-
     total_duration = timedelta(minutes=duration)
-
     embed = discord.Embed(
         title="Giveaway",
         description=f"{description} \n\nUse ✅ to enter!\n\n**Prize:** {prize} points\n**Winners:** {winners}\n**Entry Fee:** {entry_fee} points\n**Ends In:** {format_timedelta(total_duration)}",
         color=0x00FF00
     )
     embed.set_footer(text=f"Hosted by {user.name}")
-
     message = await ctx.send(embed=embed)
     await message.add_reaction('✅')
-
     giveaway_data[message.id] = {
         'host': user.id,
         'winners': winners,
@@ -141,54 +119,37 @@ async def giveaway(ctx, duration: int, winners: int, entry_fee: int, prize: int,
         'participants': [],
         'emoji': '✅'
     }
-
-    # Actualizează mesajul în fiecare minut
-    while total_duration.total_seconds() > 0:
-        remaining_time_str = format_timedelta(total_duration)
-        embed.description = f"{description} \n\nUse ✅ to enter!\n\n**Prize:** {prize} points\n**Winners:** {winners}\n**Entry Fee:** {entry_fee} points\n**Ends In:** {remaining_time_str}"
-        await message.edit(embed=embed)
-        await asyncio.sleep(60)  # Așteaptă un minut între actualizări
-        total_duration -= timedelta(minutes=1)
-
-    # Alege câștigătorii la sfârșitul giveaway-ului
-    await choose_winner(ctx, message.id)
-
+    asyncio.create_task(end_giveaway(message.id, ctx))
 
 def format_timedelta(delta):
     hours, remainder = divmod(delta.seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
     return f"{delta.days} days, {hours} hours, {minutes} minutes, {seconds} seconds"
 
-
 @bot.event
 async def on_reaction_add(reaction, user):
-    if user.bot:  # Ignoră reacțiile de la bot
+    if user.bot:
         return
-
     message_id = reaction.message.id
     if message_id in giveaway_data:
         giveaway_info = giveaway_data[message_id]
         entry_fee = giveaway_info['entry_fee']
-
         cursor.execute("SELECT puncte FROM testbot WHERE nume = %s", (user.name,))
         row = cursor.fetchone()
-
         if row is not None and row[0] >= entry_fee:
             new_points = row[0] - entry_fee
             cursor.execute("UPDATE testbot SET puncte = %s WHERE nume = %s", (new_points, user.name))
             cnx.commit()
-
             giveaway_info['participants'].append(user.id)
-
             await user.send(f"You've successfully entered the giveaway! You paid {entry_fee} points as an entry fee.")
             await user.send(f"Good luck! ✅")
         else:
             await user.send(f"Insufficient points to enter the giveaway. You need {entry_fee} points.")
-            await reaction.remove(user)  # Remove the reaction if entry is not successful
-
+            await reaction.remove(user)
 
 @bot.event
 async def on_bot_close():
     cursor.close()
-    cnx.close
-bot.run('MTIwNTk0MzUxNzMxOTM5NzUyNg.GGbYUv.6Q6BPrwVzA9qHtcEoqvJ1mtmGPMUAG44PUZRCc')
+    cnx.close()
+
+bot.run('MTIwNTk0MzUxNzMxOTM5NzUyNg.Gh2I8P.WGesCgaii9qtp1aXGDpb1UOD5F4e2m1pNUpy74')
